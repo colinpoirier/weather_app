@@ -219,9 +219,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   //   return RadialListViewModel(items: rlivs);
   // }
 
-  RadialListViewModel _populateRadialList(List<Map> data){
-    var settingsBloc = WeatherInherited.of(context).settingsBloc;
-    var forecastDay = data[0][settingsBloc.locStringOut.value].forecast.forecastday[daysIndex];
+  RadialListViewModel _populateRadialList(List<Map> data, String locString){
+    // var settingsBloc = WeatherInherited.of(context).settingsBloc;
+    var forecastDay = data[0][locString].forecast.forecastday[daysIndex];
     const List<int> timeValues = [6, 10, 14, 18, 22];
     List<RadialListItemViewModel> rlivs = [];
     for(int j = 0; j < timeValues.length; j++){
@@ -253,10 +253,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               return StreamBuilder(
                 stream: WeatherInherited.of(context).bloc.mapCacheOut,
                 initialData: null,
-                builder: (context, AsyncSnapshot snapshot){
+                builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot){
                   return Forecast(
-                    radialList: snapshot.data != null 
-                        ? _populateRadialList(snapshot.data)
+                    radialList: snapshot.hasData && locSnapshot.hasData
+                        ? snapshot.data[0][locSnapshot.data] != null && snapshot.data[1][locSnapshot.data] != null
+                            ? _populateRadialList(snapshot.data, locSnapshot.data)
+                            : forecastRadialList
                         : forecastRadialList,
                     slidingListController: slidingListController,
                     daysIndex: daysIndex,
@@ -329,6 +331,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             openableController: openableController,
             drawer: WeekDrawer(
               days: days,
+              onRefresh: ()=>openableController.close(),
               onDaySelected: (String title, int index) async {
                 if(enabled){
                   openableController.close();

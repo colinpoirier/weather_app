@@ -124,22 +124,24 @@ class TextfieldHero extends StatelessWidget {
                                 .apixuSearchRes.apixuSearchResults.isNotEmpty) {
                               bloc.apixuSearchRes.apixuSearchResults
                                   .forEach((f) {
-                                String temp = f.name;
+                                if(!bloc.lsdComparer.containsKey(f.id)){
+                                  String temp = f.name;
 
-                                RegExp exp = RegExp(r'(.*?, .*?)(?:,|$)');
+                                  RegExp exp = RegExp(r'(.*?, .*?)(?:,|$)');
 
-                                Match match = exp.firstMatch(temp);
-                                var subRes = [];
-                                subRes.add(match.group(1).split(', '));
-                                LocationSearchData lsd = LocationSearchData()
-                                  ..name = subRes[0][0]
-                                  ..id = f.id
-                                  ..lat = f.lat
-                                  ..long = f.lon;
+                                  Match match = exp.firstMatch(temp);
+                                  var subRes = [];
+                                  subRes.add(match.group(1).split(', '));
+                                  LocationSearchData lsd = LocationSearchData()
+                                    ..name = subRes[0][0]
+                                    ..id = f.id
+                                    ..lat = f.lat
+                                    ..long = f.lon;
 
-                                subRes.add(lsd);
+                                  subRes.add(lsd);
 
-                                results.add(subRes);
+                                  results.add(subRes);
+                                }
                               });
                             }
                           }

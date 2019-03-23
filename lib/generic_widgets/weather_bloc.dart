@@ -17,6 +17,7 @@ class WeatherBloc {
   // DarkSkyWeather darkSkyResult;
   Map<String, ApixuWeather> apixuCache = Map<String, ApixuWeather>();
   Map<String, DarkSkyWeather> darkSkyCache = Map<String, DarkSkyWeather>();
+  Map<int, LocationSearchData> lsdComparer = Map<int, LocationSearchData>();
   final _apixu = BehaviorSubject<ApixuWeather>();
   final _darksky = BehaviorSubject<DarkSkyWeather>();
   final _eventIn = StreamController<WeatherEvent>();
@@ -163,6 +164,7 @@ class WeatherBloc {
   }
 
   void _getWeather(LocationSearchData lsd) async{
+    lsdComparer[lsd.id] = lsd;
     apixuCache[lsd.name] = await _getApixuForecast(lsd);
     darkSkyCache[lsd.name] = await _getDarkSkyForecast(lsd);
 

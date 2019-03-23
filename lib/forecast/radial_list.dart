@@ -304,10 +304,12 @@ class RadialListItem extends StatelessWidget {
           ),
           Container(
             width: 100,
+            height: 60,
             padding: const EdgeInsets.only(left: 5.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              //mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
                   listItem.title,
@@ -318,6 +320,8 @@ class RadialListItem extends StatelessWidget {
                 ),
                 Text(
                   listItem.subtitle,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                   softWrap: true,
                   style:  TextStyle(
                     color: Colors.white,

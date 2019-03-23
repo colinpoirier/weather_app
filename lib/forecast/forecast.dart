@@ -204,24 +204,39 @@ class Forecast extends StatelessWidget {
       children: <Widget>[
         BackgroundWithRings(),
         StreamBuilder(
-          stream: WeatherInherited.of(context).bloc.mapCacheOut,
+          stream: WeatherInherited.of(context).settingsBloc.locStringOut,
           initialData: null,
-          builder: (context, AsyncSnapshot snapshot){
-            if(snapshot.data != null){
-              return Stack(children: [
-                _highLowText(snapshot.data, context),
-                _temperatureText(snapshot.data, context),
-                __currentWeatherIcon(snapshot.data, context)
-                ]
-              );
-            } else {
-              return Stack(children: [
-                _highLowTextNull(),
-                _temperatureTextNull(),
-                __currentWeatherIconNull()
-                ]
-              );
-            }
+          builder: (context, AsyncSnapshot<String> locSnapshot){
+            return StreamBuilder(
+              stream: WeatherInherited.of(context).bloc.mapCacheOut,
+              initialData: null,
+              builder: (context, AsyncSnapshot snapshot){
+                if(snapshot.hasData && locSnapshot.hasData){
+                  if(snapshot.data[0][locSnapshot.data] != null && snapshot.data[1][locSnapshot.data] != null){
+                    return Stack(children: [
+                      _highLowText(snapshot.data, context),
+                      _temperatureText(snapshot.data, context),
+                      __currentWeatherIcon(snapshot.data, context)
+                      ]
+                    );
+                  } else {
+                    return Stack(children: [
+                      _highLowTextNull(),
+                      _temperatureTextNull(),
+                      __currentWeatherIconNull()
+                      ]
+                    );
+                  }
+                } else {
+                  return Stack(children: [
+                    _highLowTextNull(),
+                    _temperatureTextNull(),
+                    __currentWeatherIconNull()
+                    ]
+                  );
+                }
+              },
+            );
           },
         ),
         // _temperatureText(context),

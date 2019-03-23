@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/forecast/settings_saver.dart';
 import 'package:weather_app/generic_widgets/weather_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
 class SettingsBloc{
   static SettingsSaver _settingsSaver;// = SettingsSaver();
@@ -19,6 +20,7 @@ class SettingsBloc{
   final Sink<WeatherEvent> _weatherEventIn;
   bool _gpsAdded = false;
   int _selected = 0;
+  String _gpsName = '';
   //int _currentListLength = 0;
 
   Stream<SettingsSaver> get settingsOut => _settingsOut.asBroadcastStream();
@@ -57,7 +59,9 @@ class SettingsBloc{
     _handleCoords(_selected);
     _weatherEventIn.add(SetTemperatureUnit(tempUnit: _settingsSaver.units));
     _tempUnitOut.add(_settingsSaver.units);
-    _weatherEventIn.add(GetWeather(locationSearchData: _settingsSaver.lsd[0]));
+    for(LocationSearchData locationSearchData in _settingsSaver.lsd){
+      _weatherEventIn.add(GetWeather(locationSearchData: locationSearchData));
+    }
     _locStringOut.add(_settingsSaver.lsd[0].name);
     _lsdOut.add(_settingsSaver.lsd[0]);
   }
@@ -88,6 +92,8 @@ class SettingsBloc{
       _handleUnits(event.string);
     } else if (event is HandleSettings){
       _handleSettings();
+    } else if (event is UpdateWeather){
+      _updateWeather();
     }
   }
 
@@ -165,20 +171,20 @@ class SettingsBloc{
     }
   }
 
-  void _changeGPS(bool boolean){
-    _settingsSaver.useGPS = boolean;
+  void _changeGPS(bool boolean) async{
+    GeolocationStatus geolocationStatus = await Geolocator().checkGeolocationPermissionStatus();
+    _settingsSaver.useGPS = geolocationStatus == GeolocationStatus.granted ? boolean : false;
     if (_settingsSaver.useGPS && !_gpsAdded) {
-      _selectedOut.add(0);
       // _settingsSaver.combined.insert(0, 'GPS');
       // _settingsSaver.locationList.insert(0, LocationListItem());
       // _settingsSaver.nicks.insert(0, '');
       // _settingsSaver.locs.insert(0, '');
-      _settingsSaver.combined.insert(0, 'GPS');
-      _settingsSaver.lsd.insert(0, _getGPSCoords());
+      _settingsSaver.lsd.insert(0, await _getGPSCoords());
+      _settingsSaver.combined.insert(0, 'GPS'+' '+_gpsName);
       _gpsAdded = true;
+     _selectedIn.add(0);
     }
     if (!_settingsSaver.useGPS && _gpsAdded) {
-      _selectedOut.add(_selected < _settingsSaver.combined.length - 1 ? _selected : _selected - 1);
       //_settingsSaver.combined.removeAt(0);
       // _settingsSaver.add('');
       // _settingsSaver.nicks.add('');
@@ -186,6 +192,7 @@ class SettingsBloc{
       _settingsSaver.combined.removeAt(0);
       _settingsSaver.lsd.removeAt(0);
       _gpsAdded = false;
+      _selectedIn.add(_selected < _settingsSaver.combined.length - 1 ? _selected : _selected - 1);
     }
     _settingsOut.add(_settingsSaver);
   }
@@ -219,9 +226,25 @@ class SettingsBloc{
     }
   }
 
-  LocationSearchData _getGPSCoords(){
-    return LocationSearchData(name: 'GPS', lat: 0.0, long: 0.0);
+  Future<LocationSearchData> _getGPSCoords() async{
+    LocationSearchData locationSearchData = LocationSearchData();
+    Position position = await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high); 
+    locationSearchData
+      ..name = 'GPS'
+      ..lat=position.latitude
+      ..long=position.longitude;
+    _weatherEventIn.add(GetWeather(locationSearchData: locationSearchData));
+    List<Placemark> placemarks = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+    _gpsName = placemarks.first.name;
+    return locationSearchData;
   }
+
+  void _updateWeather(){
+    for(LocationSearchData locationSearchData in _settingsSaver.lsd){
+      _weatherEventIn.add(GetWeather(locationSearchData: locationSearchData));
+    }
+  }
+  
   void close(){
     _settingsOut.close();
     //_settingsIn.close();
@@ -282,3 +305,5 @@ class UnitsChange extends SettingsEvent{
 }
 
 class HandleSettings extends SettingsEvent{}
+
+class UpdateWeather extends SettingsEvent{}
