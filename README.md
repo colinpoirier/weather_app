@@ -1,6 +1,19 @@
 # weather_app
 
-A new Flutter project.
+Weather app based on Matt Carroll's youtube challenge with UI tweaks and fully functioning.
+
+### Features
+- Swipe up/down to see next/previous day weather with corresponding orbital movement.
+- Switch locations using customized dropdown menu in appbar.
+- Can use user-named location or official location name. Defaults to official if name is not provided.
+- Map screen displays past hour in 10 min increments.
+- Details screen has day/hour dependent initial scroll position.
+
+<img src="https://raw.githubusercontent.com/colinpoirier/weather_app/master/assets/main_screen.png" height="260"/>
+<img src="https://raw.githubusercontent.com/colinpoirier/weather_app/master/assets/main_screen_plus_sidebar.png" height="260"/>
+<img src="https://raw.githubusercontent.com/colinpoirier/weather_app/master/assets/settings_screen.png" height="260"/>
+<img src="https://raw.githubusercontent.com/colinpoirier/weather_app/master/assets/map_screen.png" height="260"/>
+<img src="https://raw.githubusercontent.com/colinpoirier/weather_app/master/assets/details_screen.png" height="260"/>
 
 ## Getting Started
 
